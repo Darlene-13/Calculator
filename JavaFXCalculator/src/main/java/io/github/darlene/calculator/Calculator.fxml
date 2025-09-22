@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/8"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="io.github.darlene.calculator.CalculatorController">
+
+    <!-- Top Display -->
+    <top>
+        <TextField fx:id="display" editable="false" prefHeight="60" style="-fx-font-size: 20px"/>
+    </top>
+
+    <!-- Button Grid -->
+    <center>
+        <GridPane hgap="5" vgap="5" alignment="center" padding="10">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="25"/>
+            </columnConstraints>
+
+            <!-- ROW 1 ADVANCED -->
+            <Button text="x²"   GridPane.rowIndex="0" GridPane.columnIndex="0" onAction="#handlePower2"/>
+            <Button text="x³"   GridPane.rowIndex="0" GridPane.columnIndex="1" onAction="#handlePower3"/>
+            <Button text="√"    GridPane.rowIndex="0" GridPane.columnIndex="2" onAction="#handleSqrt"/>
+            <Button text="%"    GridPane.rowIndex="0" GridPane.columnIndex="3" onAction="#handleModulo"/>
+
+            <!-- ROW 2: TRIGONOMETRY -->
+            <Button text="sin"  GridPane.rowIndex="1" GridPane.columnIndex="0" onAction="#handleSin"/>
+            <Button text="cos"  GridPane.rowIndex="1" GridPane.columnIndex="1" onAction="#handleCos"/>
+            <Button text="tan" GridPane.rowIndex="1" GridPane.columnIndex="2" onAction="#handleTan"/>
+            <Button text="ln" GridPane.rowIndex="1" GridPane.columnIndex="3" onAction="#handleLn"/>
+
+            <!--ROW 3: DIGITS -->
+            <Button text="7"    GridPane.rowIndex="2" GridPane.columnIndex="0" onAction="#handleDigit"/>
+            <Button text="8"    GridPane.rowIndex="2" GridPane.columnIndex="1" onAction="#handleDigit"/>
+            <Button text="9"    GridPane.rowIndex="2" GridPane.columnIndex="2" onAction="#handleDigit"/>
+            <Button text="/"    GridPane.rowIndex="2" GridPane.columnIndex="3" onAction="#handleOperator"/>
+            <!--ROW 4: DIGITS -->
+            <Button text="4"    GridPane.rowIndex="3" GridPane.columnIndex="0" onAction="#handleDigit"/>
+            <Button text="5"    GridPane.rowIndex="3" GridPane.columnIndex="1" onAction="#handleDigit"/>
+            <Button text="6"    GridPane.rowIndex="3" GridPane.columnIndex="2" onAction="#handleDigit"/>
+            <Button text="X"    GridPane.rowIndex="3" GridPane.columnIndex="3" onAction="#handleOperator"/>
+
+            <!-- ROW 5: DIGITS -->
+            <Button text="1"    GridPane.rowIndex="4" GridPane.columnIndex="0" onAction="#handleDigit"/>
+            <Button text="2"    GridPane.rowIndex="4" GridPane.columnIndex="1" onAction="#handleDigit"/>
+            <Button text="3"    GridPane.rowIndex="4" GridPane.columnIndex="2" onAction="#handleDigit"/>
+            <Button text="-"    GridPane.rowIndex="4" GridPane.columnIndex="3" onAction="#handleOperator"/>
+            <!-- ROW 6: DIGITS & ARITHMETICS -->
+            <Button text="0"    GridPane.rowIndex="5" GridPane.columnIndex="0" onAction="#handleDigit"/>
+            <Button text="."    GridPane.rowIndex="5" GridPane.columnIndex="1" onAction="#handleDecimal"/>
+            <Button text="="    GridPane.rowIndex="5" GridPane.columnIndex="2" onAction="#handleEquals"/>
+            <Button text="+"    GridPane.rowIndex="5" GridPane.columnIndex="3" onAction="#handleOperator"/>
+
+        </GridPane>
+    </center>
+</BorderPane>
