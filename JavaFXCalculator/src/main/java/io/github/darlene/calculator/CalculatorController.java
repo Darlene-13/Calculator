@@ -71,22 +71,22 @@ public class CalculatorController {
         }
     }
 
-    // == VARIABLES (Calculator/ Memory State) ====
+    // == VARIABLES (Calculator/ Memory State) ==== // Instance variables each CalculatorControler (object) has its own state. They store the calculators current memory and the behaviour while the user types the numbers and functions.
     private boolean useBigDecimal = false;
     private String displayText = "0";
-    private StringBuilder currentExpression = new StringBuilder();
+    private StringBuilder currentExpression = new StringBuilder();  // More efficient than string as it changes  alot without creating new objects every time.
     private State currentState = State.AWAITING_INPUT;
     private AngleMode angleMode = AngleMode.DEGREES;
     private boolean expectingOperand = true;
     private String lastCompleteExpression = "";
 
     //==== CONSTANTS FOR PRECISION CONTROL
-    private static final int PRECISION_SCALE = 15;
+    private static final int PRECISION_SCALE = 15;  //final: can't be changed as they are constants
     private static final MathContext MATH_CONTEXT = new MathContext(34, RoundingMode.HALF_UP);
 
-    // Operator precedence and properties
-    private static final Map<String, Integer> PRECEDENCE = new HashMap<>();
-    private static final Set<String> RIGHT_ASSOCIATIVE = new HashSet<>();
+    // Operator precedence and properties == Acts like a look-up table
+    private static final Map<String, Integer> PRECEDENCE = new HashMap<>();  // Finds the operator precedence in 0(1) time
+    private static final Set<String> RIGHT_ASSOCIATIVE = new HashSet<>();  //Set checks if a function exists instantly like...FUNCTIONS.contains
     private static final Set<String> FUNCTIONS = new HashSet<>();
 
     static {
@@ -151,60 +151,55 @@ public class CalculatorController {
 
 
     //==== Initialization ========
+    //==== Setting up the calculator when it starts ======
     @FXML
     public void initialize(){
-        //Initialize the display
         displayText = "0";
         updateDisplay();
 
-        // set up angle mode toggle group
+        //Set up angle mode toggle Group
         if (angleModeGroup != null){
-            degreeMode.setToggleGroup(angleModeGroup);
+            degreeMode.setToggleGroup(angleModeGroup);  // Connects the degree and radian mode buttons so that only one can be active at a time. //Mutual Exclusive selection.
             radianMode.setToggleGroup(angleModeGroup);
-            degreeMode.setSelected(true); // Set degree to always be default
+            degreeMode.setSelected(true);
         }
 
-        // Add listeners for mode changes
+        // Event Listeners for mode changes
         if (precisionToggle != null){
             precisionToggle.setOnAction(e -> togglePrecisionMode());
         }
 
-        if (angleModeGroup != null){
+        if ( angleModeGroup != null){
             angleModeGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
-                if (newToggle == degreeMode){
-                    angleMode = AngleMode.DEGREES;
-                } else if (newToggle == radianMode){
-                    angleMode = AngleMode.RADIANS;
-                }
+                angleMode = (newToggle == degreeMode) ? AngleMode.DEGREES : AngleMode.RADIANS;
             });
         }
     }
 
-    // ====HELPER FUNCTIONS =====
-
-    private void updateDisplay(){
-        if(display != null){
+    // ======DISPLAY MANAGEMENT
+    private void updateDisplay() {
+        if (display != null){
             display.setText(displayText);
         }
-    }
-    private Number parseDisplayToNumber(){
-        try{
-            if (useBigDecimal){
-                return new BigDecimal(displayText);
-            } else {
-                return Double.parseDouble(displayText);
-            }
-        } catch (NumberFormatException e){
-            return useBigDecimal ? BigDecimal.ZERO : 0.0;
+        if (expressionDisplay != null){
+            expressionDisplay.setText(currentExpression.toString())
         }
     }
 
+    private void showError(){
+        displayText = message != null ? message : "Error";
+        currentState = State.ERROR;
+        updateDisplay();
+    }
 
 
+    // === NUMBER FORMATTING ======
+    private String formatNumberforDisplay(Number number){
 
+    }
 
-
-
+    private void togglePrecisionMode() {
+    }
 
 
     public static void main(String[] args){
