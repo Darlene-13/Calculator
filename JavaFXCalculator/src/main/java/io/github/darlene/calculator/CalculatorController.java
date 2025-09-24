@@ -7,6 +7,7 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.*;
 
 
 // This is the file that handles the logic
@@ -19,9 +20,7 @@ public class CalculatorController {
 
     // ENUMERATION STATES == This represents the current state of the calculator they are constants
     public enum State {
-        AWAITING_FIRST,  // INITIAL STATE
-        OPERATOR_SELECTED, // Operator clicked, waiting for second number
-        AWAITING_SECOND, //Typing second number
+        AWAITING_INPUT,  // INITIAL STATE
         SHOWING_RESULT, // Result displayed, ready for new operation
         ERROR    //State incase-of a 0 division or anything else
     }
@@ -33,95 +32,16 @@ public class CalculatorController {
         NUMBER, OPERATOR, FUNCTION, LEFT_PAREN, RIGHT_PAREN
     }
 
-    // == VARIABLES (Calculator/ Memory State) ====
-    private boolean useBigDecimal = false;
-    private String displayText = "";   // It is a string because we are building the numbers character by character, and we parse them to a double of bigdecimal do convert it to numerics
-    private Number firstOperand = null;
-    private String pendingOperator = null;
-    private String lastOperator = null;
-    private Number lastOperand = null;
-    private State currentState = State.AWAITING_FIRST;
-    private AngleMode angleMode = AngleMode.DEGREES;
-
-    //==== CONSTANTS FOR PRECISION CONTROL
-    private static final int PRECISION_SCALE = 15;
-    private static final MathContext MATH_CONTEXT = new MathContext(34, RoundingMode.HALF_UP);
-
-    // GETTERS AND SETTERS FOR THE PRIVATE VARIABLES
-    public boolean isUseBigDecimal(){
-        return useBigDecimal;
-    }
-    public void setUseBigDecimal(boolean useBigDecimal){
-        this.useBigDecimal = useBigDecimal;
-    }
-
-    public String getDisplayText() {
-        return displayText;
-    }
-    public void setDisplayText(String displayText) {
-        this.displayText = displayText;
-        updateDisplay();
-    }
-
-    // firstOperand getter and setter methods
-    public Number getFirstOperand (){
-        return firstOperand;
-    }
-    public void setFirstOperand(Number firstOperand){
-        this.firstOperand = firstOperand;
-    }
-
-    //getter and setter for pendingOperator
-    public String getPendingOperator(){
-        return pendingOperator;
-    }
-    public void setPendingOperator(String pendingOperator){
-        this.pendingOperator = pendingOperator;
-    }
-
-    //getter and setter for lastOperator
-    public String setLastOperator(){
-        return lastOperator;
-    }
-    public void getLastOperator(String lastOperator){
-        this.lastOperator = lastOperator;
-    }
-
-    // getter and setter for lastOperand
-    public Number getLastOperand() {
-        return lastOperand;
-    }
-    public void setLastOperand(Number lastOperand){
-
-        this.lastOperand = lastOperand;
-    }
-
-    // getter and setter for the current state
-    public State getCurrentState(){
-        return currentState;
-    }
-    public void setCurrentState(State currentState){
-        this.currentState = currentState;
-    }
-
-    // getter and setter for Angle Mode
-    public AngleMode getAngleMode(){
-        return angleMode;
-    }
-    public void setAngleMode(AngleMode angleMode){
-        this.angleMode = angleMode;
-    }
-
-
     //====TOKEN FOR SHUNTING YARD ALGORITHM =====
     public static class Token {
-        TokenType type;
-        String value;
-        int precedence;
+        TokenType type;  // Is it a number, is it a sign or function?
+        String value; // what the block actually is
+        int precedence;  // some blocks need to come before others during calculation eg * should be before +
         boolean rightAssociative;
-        int arity; // NUmber of operands (1 for unary and 2 for binary)
+        int arity; // NUmber of operands (1 for unary and 2 for binary) eg: + addition needs two values while sqrt needs just one value
 
-        public Token(TokenType type, String value){
+        // Constructor for the algorithm
+        public Token(TokenType type, String value){  //Type and value are basic information about the token
             this.type = type;
             this.value = value;
             this.arity = 2; // Default binary
@@ -140,7 +60,7 @@ public class CalculatorController {
                     precedence = 4; arity = 1;
                     break;
                 case "(": case ")": precedence = 0;
-                break;
+                    break;
                 default: precedence = 0; break;
             }
 
@@ -150,6 +70,85 @@ public class CalculatorController {
             return value;
         }
     }
+
+    // == VARIABLES (Calculator/ Memory State) ====
+    private boolean useBigDecimal = false;
+    private String displayText = "0";
+    private StringBuilder currentExpression = new StringBuilder();
+    private State currentState = State.AWAITING_INPUT;
+    private AngleMode angleMode = AngleMode.DEGREES;
+    private boolean expectingOperand = true;
+    private String lastCompleteExpression = "";
+
+    //==== CONSTANTS FOR PRECISION CONTROL
+    private static final int PRECISION_SCALE = 15;
+    private static final MathContext MATH_CONTEXT = new MathContext(34, RoundingMode.HALF_UP);
+
+    // Operator precedence and properties
+    private static final Map<String, Integer> PRECEDENCE = new HashMap<>();
+    private static final Set<String> RIGHT_ASSOCIATIVE = new HashSet<>();
+    private static final Set<String> FUNCTIONS = new HashSet<>();
+
+    static {
+        PRECEDENCE.put("+", 1);
+        PRECEDENCE.put("-", 1);
+        PRECEDENCE.put("*", 2);
+        PRECEDENCE.put("/", 2);
+        PRECEDENCE.put("^", 3);
+        PRECEDENCE.put("%", 2);
+
+        RIGHT_ASSOCIATIVE.add("^");
+
+        FUNCTIONS.addAll(Arrays.asList("sqrt", "sin", "cos", "tan", "ln", "log", "abs"));;
+    }
+
+    // GETTERS AND SETTERS FOR THE PRIVATE VARIABLES
+    public boolean isUseBigDecimal(){
+        return useBigDecimal;
+    }
+    public void setUseBigDecimal(boolean useBigDecimal){
+        this.useBigDecimal = useBigDecimal;
+    }
+
+    public String getDisplayText() {
+        return displayText;
+    }
+    public void setDisplayText(String displayText) {
+        this.displayText = displayText;
+        updateDisplay();
+    }
+    public StringBuilder getCurrentExpression (){
+        return currentExpression;
+    }
+    public void setCurrentExpression(StringBuilder currentExpression){
+        this.currentExpression = currentExpression;
+    }
+    public boolean isExpectingOperand(){
+        return expectingOperand;
+    }
+    public void setExpectingOperand(boolean expectingOperand){
+        this.expectingOperand = expectingOperand;
+    }
+    public String getLastCompleteExpression(){
+        return lastCompleteExpression;
+    }
+    public void getLastCompleteExpression(String lastCompleteExpression){
+        this.lastCompleteExpression = lastCompleteExpression;
+    }
+
+    public State getCurrentState(){
+        return currentState;
+    }
+    public void setCurrentState(State currentState){
+        this.currentState = currentState;
+    }
+    public AngleMode getAngleMode(){
+        return angleMode;
+    }
+    public void setAngleMode(AngleMode angleMode){
+        this.angleMode = angleMode;
+    }
+
 
     //==== Initialization ========
     @FXML
