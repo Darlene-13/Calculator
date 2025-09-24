@@ -60,4 +60,16 @@
 
         </GridPane>
     </center>
+
+    <!-- Bottom: TOGGLE FEATURES -->
+    <bottom>
+        <HBox alignment="center" spacing="10" padding="10">
+            <ToggleGroup fx:id="angleModeGroup" />
+            <RadioButton text="Degrees" toggleGroup="$angleModeGroup" selected="true"/>
+            <RadioButton text="Radians" toggleGroup="$angleModeGroup"/>
+
+            <CheckBox fx:id="precisionToggle" text="High SSPrecision (BigDecimal)"/>
+
+        </HBox>
+    </bottom>
 </BorderPane>
