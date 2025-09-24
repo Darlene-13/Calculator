@@ -5,17 +5,20 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
+
+import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.*;
 
-
 // This is the file that handles the logic
 public class CalculatorController {
     //===FXML UI COMPONENTS =====
-    @FXML private TextField textField;    // The display to show the numbers during the calculations and answers
+    @FXML private TextField display;
+    @FXML private TextField expressionDisplay;  // The display to show the numbers during the calculations and answers
     @FXML private CheckBox precisionToggle;   // Toggles between the bigDecimalMode and double mode for precision and accuracy
-    @FXML private RadioButton radioButton;  // They help us in choosing the different angle modes that is between degrees and radians
+    @FXML private RadioButton degreeMode;
+    @FXML private RadioButton radianMode; // They help us in choosing the different angle modes that is between degrees and radians
     @FXML private ToggleGroup angleModeGroup;
 
     // ENUMERATION STATES == This represents the current state of the calculator they are constants
@@ -182,11 +185,11 @@ public class CalculatorController {
             display.setText(displayText);
         }
         if (expressionDisplay != null){
-            expressionDisplay.setText(currentExpression.toString())
+            expressionDisplay.setText(currentExpression.toString());
         }
     }
 
-    private void showError(){
+    private void showError(String message){
         displayText = message != null ? message : "Error";
         currentState = State.ERROR;
         updateDisplay();
@@ -194,8 +197,34 @@ public class CalculatorController {
 
 
     // === NUMBER FORMATTING ======
-    private String formatNumberforDisplay(Number number){
+    private String formatNumberForDisplay(Number number){
+        if (number == null) return "0";
 
+        if (useBigDecimal && number instanceof BigDecimal){
+            BigDecimal bd = (BigDecimal) number;
+            return bd.stripTrailingZeros().toPlainString();
+        } else {
+            double d = number.doubleValue();
+             if(Double.isInfinite(d)) return "∞";
+             if(Double.isNaN(d)) return "Error";
+
+             if (Math.abs(d) >= 1e12 || Math.abs(d) < 1e-6 && d != 0){
+                 return String.format("%.6E", d);
+             } else {
+                 // Clean formatting for normal numbers
+                 String formatted = String.format("%.12f", d);
+                 formatted = formatted.replaceAll("0*$", "").replaceAll("\\.$", "");
+                 return formatted.isEmpty() ? "0" : formatted;
+             }
+        }
+    }
+
+    private Number parseNumber(String str){
+        try {
+            return useBigDecimal ? new BigDecimal(str) : Double.parseDouble(str);
+        } catch (NumberFormatException e){
+            return useBigDecimal ? BigDecimal.ZERO : 0.0;
+        }
     }
 
     private void togglePrecisionMode() {
